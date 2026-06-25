@@ -4,6 +4,8 @@ This document provides guidance for contributing to the AMYboard project and und
 
 ## Project Structure
 
+This is the **amyboard-eurorack-menu** system - a modular menu UI for configuring and controlling the AMY synthesizer.
+
 ### Main Files
 - **sketch.py** (5 lines): Entry point/bootloader for Tulip firmware
 - **menu.py** (1200+ lines): Core application with all UI, input drivers, and logic

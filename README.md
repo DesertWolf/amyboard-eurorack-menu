@@ -1,4 +1,4 @@
-# AMYboard Eurorack Menu System
+# amyboard-eurorack-menu
 
 A professional MicroPython menu system and UI framework for the AMY synthesizer running on AMYboard hardware (Tulip firmware). This project provides a navigable interface for configuring synthesizer parameters, managing patch profiles, and handling real-time CV input/MIDI control.
 
@@ -52,8 +52,8 @@ A professional MicroPython menu system and UI framework for the AMY synthesizer 
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/yourusername/amyboard.git
-   cd amyboard
+   git clone https://github.com/yourusername/amyboard-eurorack-menu.git
+   cd amyboard-eurorack-menu
    ```
 
 2. **Upload to AMYboard**
