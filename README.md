@@ -2,6 +2,33 @@
 
 A professional MicroPython menu system and UI framework for the AMY synthesizer running on AMYboard hardware (Tulip firmware). This project provides a navigable interface for configuring synthesizer parameters, managing patch profiles, and handling real-time CV input/MIDI control.
 
+> ⚠️ IMPORTANT: Not all features are implemented at this time. This project is a work in progress.
+
+## Roadmap
+
+### ✅ Current (v0.1)
+
+- 256 stock voice selection via rotary encoder
+- CV 1/2 input assignment (v/oct and gate)
+- OLED menu navigation
+
+### 🔄 In Progress
+
+- MIDI input support for polyphonic playback
+- Voice allocation logic for use with polyphonic sequencers
+
+### 📋 Planned
+
+- Performance mode with real time parameter control
+- Additional CV routing options
+- Extended voice customisation
+
+### 💡 Future Ideas
+
+- Deeper sequncer midi integration
+- Preset save and recall
+- Additional display layouts
+
 ## Features
 
 - **Navigable Menu Interface**: Intuitive hierarchical menu system for synthesizer parameter configuration
@@ -41,7 +68,6 @@ A professional MicroPython menu system and UI framework for the AMY synthesizer 
 |--------|------------|
 | SH1107 Display | 0x3C |
 | Adafruit Seesaw Encoder | 0x36, 0x37, 0x49 |
-| Adafruit Twist | 0x3E, 0x3F |
 
 ### UART Configuration
 - **UART ID**: 1 (configurable)
@@ -62,14 +88,20 @@ A professional MicroPython menu system and UI framework for the AMY synthesizer 
    - Create `/user/current/` directory on the device if it doesn't exist
 
 3. **Directory Structure on Device**
+
+Default file structure
+
+![Default](assets/default_file_structure.png)
+
+Menu file structurexx`  x`x 
+
+![Menu](assets/menu_file_structure.png)
+
    ```
-   /
-   ├── sketch.py              (bootloader)
-   ├── menu.py               (main application)
-   ├── basesketch.py         (hardware init)
-   ├── perf_config.json      (calibration)
-   └── /user/
+    /user/
+   ├── boot.py               (main application)
        ├── /current/
+       |   ├── sketch.py        (bootloader)
        │   ├── perf_config.json (runtime config)
        │   └── menu_state.json  (UI state)
        ├── /patches/
@@ -96,18 +128,6 @@ AMYboard Menu
 └── System          - I2C scan, control source, MIDI settings, save/reload
 ```
 
-### Computer Input Mode (Testing)
-Set `INPUT_MODE = "computer"` in `menu.py` and send commands via stdin:
-```bash
-# Navigation
-echo "up" | python sketch.py
-echo "down" | python sketch.py
-echo "delta 5" | python sketch.py  # Delta by N steps
-
-# Selection
-echo "click" | python sketch.py
-echo "back" | python sketch.py     # Long press (menu back/panic)
-```
 
 ## Configuration
 
