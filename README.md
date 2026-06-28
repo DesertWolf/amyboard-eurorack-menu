@@ -1,8 +1,24 @@
-# amyboard-eurorack-menu
+# AMYboard Eurorack Menu
 
-A professional MicroPython menu system and UI framework for the AMY synthesizer running on AMYboard hardware (Tulip firmware). This project provides a navigable interface for configuring synthesizer parameters, managing patch profiles, and handling real-time CV input/MIDI control.
+A MicroPython menu system for the AMYboard Eurorack module, adding hands-on 
+voice selection and CV assignment via OLED display and rotary encoder — 
+no laptop required during performance.
 
-> ⚠️ IMPORTANT: Not all features are implemented at this time. This project is a work in progress.
+> 📺 **See it in action:** [YouTube Demo](https://youtu.be/oOmmAvbUHY0)
+
+## What it does
+
+- Browse and select from all 256 AMYboard stock voices via OLED display 
+  and rotary encoder
+- Assign CV 1 and CV 2 inputs for v/oct and gate control
+- Designed for live Eurorack performance
+
+Built by a modular musician who needed this for their own setup. If you 
+have an AMYboard in a Eurorack case and want hands-on control without a 
+computer, this is for you.
+
+> ⚠️ **Work in progress** — core voice selection and CV assignment are 
+> working. Additional features in development — see the roadmap below.
 
 ## Roadmap
 
