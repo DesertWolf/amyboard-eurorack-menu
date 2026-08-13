@@ -8,8 +8,7 @@ no laptop required during performance.
 
 ## What it does
 
-- Browse and select from all 256 AMYboard stock voices via OLED display 
-  and rotary encoder
+- Browse and select from all 256 AMYboard stock voices via OLED display and rotary encoder
 - Assign CV 1 and CV 2 inputs for v/oct and gate control
 - Designed for live Eurorack performance
 
@@ -30,7 +29,7 @@ computer, this is for you.
 
 ### 🔄 In Progress
 
-- MIDI input support for polyphonic playback
+- Menu-level MIDI configuration and performance controls
 - Voice allocation logic for use with polyphonic sequencers
 
 ### 📋 Planned
@@ -41,7 +40,7 @@ computer, this is for you.
 
 ### 💡 Future Ideas
 
-- Deeper sequncer midi integration
+- Deeper sequencer midi integration
 - Preset save and recall
 - Additional display layouts
 
@@ -55,13 +54,11 @@ computer, this is for you.
   - Computer keyboard/stdin (for testing)
   - Hardware automation (demo mode)
   - Hybrid mode (combine multiple drivers)
-  
 - **Patch Profile Management**: Save and load complete synthesizer configurations
 - **CV Control**: Real-time CV input handling for:
   - Pitch control (1V/octave default, configurable)
   - Gate/trigger input (adjustable threshold)
   - Macro mapping for modulation control
-  
 - **Display Support**: Compatible with SH1107 128×128 OLED displays (I2C)
 - **MIDI Integration**: Full MIDI channel selection and CC/note mappings
 - **Voice Mode Control**: Polyphony, unison mode, detune, and spread configuration
@@ -70,22 +67,26 @@ computer, this is for you.
 ## Hardware Requirements
 
 ### Minimum Setup
+
 - **AMYboard** with Tulip MicroPython firmware
 - **SH1107 OLED Display** (128×128 pixels, I2C address 0x3C)
 - **Adafruit Seesaw Encoder** or **Adafruit Twist** controller (I2C)
 
 ### Optional Input Devices
+
 - **MIDI USB Interface** or **DIN-5 MIDI** connection
 - **CV Input Modules** (for real-time parameter control)
 - **Macro Controllers** (any CV-capable hardware)
 
 ### I2C Addresses (Auto-Detected)
+
 | Device | Address(es) |
 |--------|------------|
 | SH1107 Display | 0x3C |
 | Adafruit Seesaw Encoder | 0x36, 0x37, 0x49 |
 
 ### UART Configuration
+
 - **UART ID**: 1 (configurable)
 - **Baud Rate**: 31250 (MIDI standard)
 - **RX/TX Pins**: Configurable per hardware setup
@@ -93,10 +94,11 @@ computer, this is for you.
 ## Installation
 
 1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/yourusername/amyboard-eurorack-menu.git
-   cd amyboard-eurorack-menu
-   ```
+
+```bash
+git clone https://github.com/yourusername/amyboard-eurorack-menu.git
+cd amyboard-eurorack-menu
+```
 
 2. **Upload to AMYboard**
    - Transfer `sketch.py`, `menu.py`, and `perf_config.json` to your Tulip device
@@ -109,31 +111,45 @@ Default file structure
 
 ![Default](assets/default_file_structure.png)
 
-Menu file structurexx`  x`x 
+Menu file structure
 
 ![Menu](assets/menu_file_structure.png)
 
-   ```
-    /user/
-   ├── boot.py               (main application)
-       ├── /current/
-       |   ├── sketch.py        (bootloader)
-       │   ├── perf_config.json (runtime config)
-       │   └── menu_state.json  (UI state)
-       ├── /patches/
-       │   └── profileXXX.patch (saved profiles)
-       └── /sd/               (SD card mount, optional)
-   ```
+```
+/user/
+├── boot.py               (main application)
+    ├── /current/
+    |   ├── sketch.py        (bootloader)
+    │   ├── perf_config.json (runtime config)
+    │   └── menu_state.json  (UI state)
+    ├── /patches/
+    │   └── profileXXX.patch (saved profiles)
+    └── /sd/               (SD card mount, optional)
+```
 
 ## Quick Start
 
 ### Basic Operation
+
 1. **Power on** the AMYboard - menu system initializes automatically
 2. **Navigate** using encoder: rotate for up/down, click to enter/select
 3. **Edit Values**: Click to enter edit mode (marked with `*`), rotate to adjust, click to confirm
 4. **Exit/Back**: Long-press to return to previous menu or panic (stop all notes)
 
+### Startup Recovery / Skip Menu
+
+The menu includes a startup pause so you can regain access to the AMYboard if the running menu prevents you from connecting through Thonny to update files.
+
+1. Reset or power-cycle the AMYboard.
+2. Watch the OLED during the startup pause.
+3. **Press the rotary encoder button** to skip loading the menu.
+4. The AMYboard will finish booting without starting the menu application.
+5. Connect with Thonny and update, replace, or troubleshoot the files in `/user/current/`.
+
+> If you miss the startup pause and the menu loads, reset the AMYboard and try again. The startup skip is your safety net while developing or modifying the menu.
+
 ### Menu Structure
+
 ```
 AMYboard Menu
 ├── Preset Voice    - Select patch, configure voices, set CV parameters
@@ -144,7 +160,6 @@ AMYboard Menu
 └── System          - I2C scan, control source, MIDI settings, save/reload
 ```
 
-
 ## Configuration
 
 ### Main Config File: `perf_config.json`
@@ -154,19 +169,19 @@ The configuration is automatically saved to `/user/current/perf_config.json` and
 ```json
 {
   "system": {
-    "control_source": "auto",  // "hybrid", "computer", "midi", "auto", "adafruit", "twist", "demo"
-    "midi_channel": 1           // 1-16
+    "control_source": "auto",
+    "midi_channel": 1
   },
   "preset_voice": {
-    "patch": 0,                 // 0-257 (builtin patches)
-    "num_voices": 1,            // 1-16
-    "synth": 1,                 // Synth index
-    "cv_pitch_input": 0,        // 0 = CV1
-    "cv_gate_input": 1,         // 1 = CV2
-    "cv_pitch_scale": 12.0,     // 12.0 = 1V/octave (semitones per volt)
-    "cv_pitch_offset": 60.0,    // MIDI note at 0V (60 = C4)
-    "cv_gate_on": 1.2,          // Gate high threshold (volts)
-    "cv_gate_off": 0.6          // Gate low threshold (volts)
+    "patch": 0,
+    "num_voices": 1,
+    "synth": 1,
+    "cv_pitch_input": 0,
+    "cv_gate_input": 1,
+    "cv_pitch_scale": 12.0,
+    "cv_pitch_offset": 60.0,
+    "cv_gate_on": 1.2,
+    "cv_gate_off": 0.6
   },
   "voice_mode": {
     "polyphony": 6,
@@ -208,10 +223,12 @@ DEFAULT_CV_PITCH_OFFSET = 60.0 # MIDI note at 0V
 ### Core Components
 
 #### Display System (`Display` class)
+
 - Abstracts hardware display backends (SH1107 vs amyboard native)
 - Provides rendering interface: `clear()`, `text()`, `fill_rect()`, `bar()`, `refresh()`
 
 #### Input Drivers (extend `BaseInputDriver`)
+
 - **DemoInputDriver**: Hardcoded automation for testing
 - **ComputerInputDriver**: stdin-based input for debugging
 - **MIDIInputDriver**: UART-based MIDI with configurable mappings
@@ -221,7 +238,9 @@ DEFAULT_CV_PITCH_OFFSET = 60.0 # MIDI note at 0V
 - **Auto-detection**: `make_input_driver()` function automatically detects available hardware
 
 #### Page System (extend `PageBase`)
+
 Each page represents a configuration section:
+
 - **PresetVoicePage**: Patch selection and voice configuration
 - **PatchesPage**: Browse/load/save patch profiles
 - **MacrosPage**: Edit 4 macro values with visual bars
@@ -230,12 +249,14 @@ Each page represents a configuration section:
 - **SystemPage**: System settings and diagnostics
 
 #### Main Application (`MenuApp` class)
+
 - Initializes display, input driver, and all pages
 - Manages application state and configuration
 - Runs main loop: poll input → handle events → render → process CV → sleep
 
 ### Main Loop Flow
-```python
+
+```
 while True:
     1. Poll input driver for events
     2. Handle navigation/editing events
@@ -247,6 +268,7 @@ while True:
 ```
 
 ### CV Play Implementation
+
 - CV1 input → Pitch (0V = MIDI note 60 by default, adjustable)
 - CV2 input → Gate (threshold-based triggering)
 - Gate rising edge triggers `amy.send(note=N, vel=1)`
@@ -255,28 +277,30 @@ while True:
 ## Development
 
 ### Adding a New Page
+
 ```python
 class MyPage(PageBase):
     title = "My Feature"
-    
+
     def __init__(self, app):
         super().__init__(app)
         # Initialize state
-    
+
     def on_enter(self):
         # Called when page is entered
         pass
-    
+
     def on_event(self, ev):
         # Handle InputEvent (delta, click, long_press)
         pass
-    
+
     def render(self, d):
         # Draw to display object d
         d.text("Title", 0, 0, 255)
 ```
 
 ### Important Code Conventions
+
 - **No f-strings**: Use `%` formatting only (MicroPython compatibility)
 - **Exception Handling**: Broad `except Exception` preferred for robustness
 - **State Management**: All state lives in `cfg` dict, saved to JSON
@@ -284,6 +308,7 @@ class MyPage(PageBase):
 - **MIDI Note-Off**: Always include `synth` parameter in `amy.send()` calls
 
 ### Testing with Demo Mode
+
 ```python
 INPUT_MODE = "demo"  # Enable automated menu navigation
 # Script cycles through: up, up, click, up, up, click, down, long-press
@@ -302,23 +327,27 @@ INPUT_MODE = "demo"  # Enable automated menu navigation
 ## Quirks & Known Issues
 
 ### MicroPython Limitations
+
 - No f-string support: `"note:%d" % note` instead of `f"note:{note}"`
 - Broad exception handling required due to firmware variations
 - Limited JSON module (`ujson` preferred over standard `json`)
 
 ### Hardware Specifics
+
 - **Gate Threshold**: Default ~1.2V on, ~0.6V off (hysteresis to prevent jitter)
 - **CV Scale**: Default 1V/octave (12 semitones/volt) - adjustable per patch
 - **Display Rotation**: Set to 90° by default; change `DISPLAY_ROTATE` if needed
 - **MIDI**: Must include `synth` parameter in `amy.send()` for reliable note-offs
 
 ### Input Driver Priority (Auto Mode)
+
 1. Try Adafruit Twist (0x3E/0x3F)
 2. Fallback to Adafruit Seesaw (0x36/0x37/0x49)
 
 ## Contributing
 
 Contributions are welcome! Please:
+
 1. Follow existing code style and conventions
 2. Test on actual hardware when possible
 3. Maintain MicroPython compatibility (no f-strings, etc.)
@@ -337,7 +366,15 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 ## Changelog
 
+### Unreleased
+
+- Added startup pause with encoder-button bypass to skip loading the menu.
+- Provides a recovery path for reconnecting through Thonny when the menu prevents normal code updates.
+- Updated Roadmap to reflect that TRS MIDI polyphonic playback works via AMYboard firmware without additional setup.
+- Added AMYboard Discord and official documentation links.
+
 ### v1.0.0 (2026-06-24)
+
 - Initial release
 - Full menu system implementation
 - Multi-driver input support
@@ -346,8 +383,14 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 - MIDI integration
 - System diagnostics
 
+## Community
+
+AMYboard is an open-source project supported by an active community. For AMYboard discussion, setup help, patch ideas, and development conversation, join the [AMYboard Discord](https://discord.com/invite/TzBFkUb8pG).
+
+Official AMYboard documentation and examples are available in the [AMYboard documentation](https://github.com/shorepine/tulipcc/blob/main/docs/amyboard/README.md).
+
 ---
 
-**Last Updated**: 2026-06-24  
+**Last Updated**: 2026-08-12  
 **Status**: Active Development  
 **Python Version**: MicroPython 3.x
