@@ -385,7 +385,9 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 ## Community
 
-AMYboard is an open-source project supported by an active community. For AMYboard discussion, setup help, patch ideas, and development conversation, join the [AMYboard Discord](https://discord.com/invite/TzBFkUb8pG).
+AMYboard has an active community on the [AMYboard Discord](https://discord.com/invite/TzBFkUb8pG) — a good place for setup help, patch ideas, and development discussion.
+
+**A note for users of this menu software:** The menu takes full control of the AMYboard on boot, which can make it difficult to reconnect via Thonny or mpremote to update files. If you find yourself locked out, see the [Startup Recovery](#startup-recovery--skip-menu) section above before reaching for a full firmware reflash.
 
 Official AMYboard documentation and examples are available in the [AMYboard documentation](https://github.com/shorepine/tulipcc/blob/main/docs/amyboard/README.md).
 
