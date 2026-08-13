@@ -40,6 +40,32 @@ DEFAULT_CV_GATE_ON = 1.2
 DEFAULT_CV_GATE_OFF = 0.6
 DEFAULT_CV_PITCH_SCALE = 12.0  # 1V/oct -> 12 semitones per volt
 DEFAULT_CV_PITCH_OFFSET = 60.0  # 0V = MIDI note 60
+DEFAULT_FILTER_TYPE = "LPF"
+DEFAULT_FILTER_CUTOFF = 4000  # Hz, audible default
+
+
+def get_filter_type_options():
+    try:
+        import amy
+    except Exception:
+        return ("LPF",)
+
+    options = []
+    if hasattr(amy, "FILTER_LPF"):
+        options.append("LPF")
+    if hasattr(amy, "FILTER_HPF"):
+        options.append("HPF")
+    if hasattr(amy, "FILTER_BPF"):
+        options.append("BPF")
+    if hasattr(amy, "FILTER_LPF24"):
+        options.append("LPF24")
+
+    if not options:
+        return ("LPF",)
+    return tuple(options)
+
+
+FILTER_TYPE_OPTIONS = get_filter_type_options()
 
 
 # -----------------------------
@@ -126,6 +152,38 @@ def merge_missing(dst, defaults):
         elif isinstance(v, dict):
             dst[k] = merge_missing(dst.get(k), v)
     return dst
+
+
+def normalize_filter_type(value):
+    if not isinstance(value, str):
+        value = str(value)
+    kind = value.upper().strip()
+    if kind in ("LPF", "LOWPASS", "LOW-PASS"):
+        return "LPF"
+    if kind in ("HPF", "HIGHPASS", "HIGH-PASS"):
+        return "HPF"
+    if kind in ("BPF", "BANDPASS", "BAND-PASS"):
+        return "BPF"
+    if kind in ("LPF24", "LOWPASS24", "LOW-PASS24"):
+        return "LPF24"
+    return DEFAULT_FILTER_TYPE
+
+
+def filter_type_to_amy_value(value):
+    kind = normalize_filter_type(value)
+    try:
+        import amy
+    except Exception:
+        return None
+    if kind == "HPF":
+        return amy.FILTER_HPF
+    if kind == "BPF":
+        return amy.FILTER_BPF
+    if kind == "LPF24":
+        if hasattr(amy, "FILTER_LPF24"):
+            return amy.FILTER_LPF24
+        return amy.FILTER_LPF
+    return amy.FILTER_LPF
 
 
 # -----------------------------
@@ -871,6 +929,62 @@ class PresetVoicePage(PageBase):
             y += 16
 
 
+class FilterTypePage(PageBase):
+    title = "Filt Type"
+
+    def _values(self):
+        return self.app._preset_values()
+
+    def _selected_index(self):
+        cur = normalize_filter_type(self._values().get("filter_type", DEFAULT_FILTER_TYPE))
+        try:
+            return FILTER_TYPE_OPTIONS.index(cur)
+        except Exception:
+            return 0
+
+    def on_event(self, ev):
+        if ev.delta != 0:
+            idx = self._selected_index()
+            idx = (idx + ev.delta) % len(FILTER_TYPE_OPTIONS)
+            self._values()["filter_type"] = FILTER_TYPE_OPTIONS[idx]
+            self.app.apply_filter_type(save=True, show_notice=True)
+        if ev.click or ev.long_press:
+            self.app.back_to_menu()
+
+    def render(self, d):
+        cur = normalize_filter_type(self._values().get("filter_type", DEFAULT_FILTER_TYPE))
+        d.text("Filt Type", 0, 0, 255)
+        d.text("Mode:%s" % cur, 0, 24, 255)
+        y = 40
+        for opt in FILTER_TYPE_OPTIONS:
+            marker = ">" if opt == cur else " "
+            d.text("%s %s" % (marker, opt), 0, y, 255)
+            y += 16
+        d.text("delta:change", 0, 112, 160)
+
+class FilterCutoffPage(PageBase):
+    title = "Filt Cut"
+
+    def _values(self):
+        return self.app._preset_values()
+
+    def on_event(self, ev):
+        if ev.delta != 0:
+            p = self._values()
+            step = 200 if p["filter_cutoff"] >= 2000 else 50
+            p["filter_cutoff"] = clamp(p["filter_cutoff"] + ev.delta * step, 100, 12000)
+            self.app.apply_filter_type(save=True, show_notice=True)
+        if ev.click or ev.long_press:
+            self.app.back_to_menu()
+
+    def render(self, d):
+        p = self._values()
+        cutoff = p["filter_cutoff"]
+        d.text("Filt Cutoff", 0, 0, 255)
+        d.text("Freq:%dHz" % cutoff, 0, 24, 255)
+        d.bar(0, 48, 128, 12, cutoff, 12000)
+        d.text("delta:change", 0, 112, 160)
+
 class VoiceModePage(PageBase):
     title = "Voice Mode"
 
@@ -1134,6 +1248,8 @@ DEFAULT_CFG = {
         "synth": DEFAULT_PRESET_SYNTH,
         "patch": 0,
         "num_voices": 1,
+        "filter_type": DEFAULT_FILTER_TYPE,
+        "filter_cutoff": DEFAULT_FILTER_CUTOFF,
         "cv_pitch_input": DEFAULT_CV_PITCH_INPUT,
         "cv_gate_input": DEFAULT_CV_GATE_INPUT,
         "cv_gate_on": DEFAULT_CV_GATE_ON,
@@ -1156,7 +1272,8 @@ DEFAULT_STATE = {"menu_index": 0, "current_page": "menu"}
 
 
 class MenuApp:
-    menu_items = ["Preset Voice", "Patches", "Macros", "CV Routing", "Voice Mode", "System"]
+    menu_items = ["Preset Voice", "Filt Type", "Filt Cut", "Patches", "Macros", "CV Routing", "Voice Mode", "System"]
+
     control_sources = list(CONTROL_SOURCE_OPTIONS)
 
     def __init__(self):
@@ -1171,6 +1288,8 @@ class MenuApp:
 
         self.pages = {
             "preset voice": PresetVoicePage(self),
+            "filt type": FilterTypePage(self),
+            "filt cut": FilterCutoffPage(self),
             "patches": PatchesPage(self),
             "macros": MacrosPage(self),
             "cv routing": CVRoutingPage(self),
@@ -1307,6 +1426,12 @@ class MenuApp:
             p["cv_pitch_offset"] = float(p.get("cv_pitch_offset", DEFAULT_CV_PITCH_OFFSET))
         except Exception:
             p["cv_pitch_offset"] = DEFAULT_CV_PITCH_OFFSET
+        p["filter_type"] = normalize_filter_type(p.get("filter_type", DEFAULT_FILTER_TYPE))
+        try:
+            filter_cutoff = int(p.get("filter_cutoff", DEFAULT_FILTER_CUTOFF))
+        except Exception:
+            filter_cutoff = DEFAULT_FILTER_CUTOFF
+        p["filter_cutoff"] = clamp(filter_cutoff, 100, 12000)
         self.cfg["preset_voice"] = p
         return p
 
@@ -1327,6 +1452,34 @@ class MenuApp:
        # No static routing API available on this firmware
         return True
 
+    def apply_filter_type(self, save=False, show_notice=False):
+        p = self._preset_values()
+        kind = normalize_filter_type(p.get("filter_type", DEFAULT_FILTER_TYPE))
+        p["filter_type"] = kind
+        cutoff = int(p.get("filter_cutoff", DEFAULT_FILTER_CUTOFF))
+        try:
+            import amy
+
+            amy.send(
+                synth=p["synth"],
+                osc=0,
+                filter_type=filter_type_to_amy_value(kind),
+                filter_freq=cutoff,
+            )
+            ok = True
+        except Exception:
+            print("Filter error:", e)
+            ok = False
+
+        if show_notice:
+            if ok:
+                self.notice("Filt:%s %dHz" % (kind, cutoff))
+            else:
+                self.notice("Filter err")
+        if save:
+            self.save_cfg()
+        return ok
+
     def apply_preset_voice(self, save=False, show_notice=False):
         p = self._preset_values()
         ok = False
@@ -1342,17 +1495,20 @@ class MenuApp:
         except Exception:
             ok = False
 
+        filter_ok = self.apply_filter_type(save=False, show_notice=False)
         cv_ok = self.apply_cv_play_mapping()
         if show_notice:
-            if ok and cv_ok:
+            if ok and filter_ok and cv_ok:
                 self.notice("Preset %s ready" % self.patch_label(p["patch"]))
-            elif ok:
+            elif ok and filter_ok:
                 self.notice("Preset set; CV map err")
+            elif ok:
+                self.notice("Preset apply failed")
             else:
                 self.notice("Preset apply failed")
         if save:
             self.save_cfg()
-        return ok and cv_ok
+        return ok and filter_ok and cv_ok
 
     def get_midi_channel(self):
         try:
@@ -1383,7 +1539,8 @@ class MenuApp:
         try:
             import amy
 
-            amy.send(vel=0)
+            synth = int(self.cfg.get("preset_voice", {}).get("synth", DEFAULT_PRESET_SYNTH))
+            amy.send(synth=synth, vel=0)
         except Exception:
             pass
         self.notice("PANIC")
